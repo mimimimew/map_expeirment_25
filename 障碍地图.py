@@ -6,12 +6,8 @@ from datetime import datetime
 from pygame.locals import *  
 
 # ================= 全局配置 =================  
-FONT_PATH = "C:/Windows/Fonts/simhei.ttf"  
-GRID_SIZE = 49  
-CELL_SIZE = 15  
-PANEL_WIDTH = 200  
-WIDTH = GRID_SIZE * CELL_SIZE + PANEL_WIDTH  
-HEIGHT = GRID_SIZE * CELL_SIZE  
+
+FONT_PATH = "/System/Volumes/Data/Users/mimimi/Desktop/mapexperimentcode/simhei.ttf"
 
 # 游戏配置
 GRID_SIZE = 49  
