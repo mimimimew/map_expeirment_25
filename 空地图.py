@@ -147,8 +147,7 @@ class PathGame:
                     # 移动验证  
                     if not (0 <= new_x <= GRID_SIZE and 0 <= new_y <= GRID_SIZE):  
                         return  
-                    if (new_x, new_y) in self.path:  
-                        return  
+                    # 移除之前的检查，允许重复走过的路径
                     if abs(new_x - self.current_pos[0]) + abs(new_y - self.current_pos[1]) != 1:  
                         return  
                     
@@ -295,4 +294,4 @@ class PathGame:
 
 if __name__ == "__main__":  
     game = PathGame()  
-    game.run()
+    game.run()  
