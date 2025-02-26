@@ -24,7 +24,6 @@ COLORS = {
     'grid': (211, 211, 211),  
     'start': (0, 0, 255),  
     'current': (255, 0, 0),  
-    'target': (255, 0, 0),  
     'obstacle': (169, 169, 169)  
 }  
 
@@ -33,44 +32,7 @@ MAP_CONFIGS = [
     {  # 练习地图  
         'name': "练习地图",  
         'start': (7, 42),  
-        'target': (20, 18),  
-        'obstacles': []  
-    },  
-    {  # 正式地图1  
-        'name': "地图1",  
-        'start': (10, 40),  
-        'target': (45, 5),  
-        'obstacles': [  
-            (9,9,8,1), (8,8,12,1), (10,10,6,1), (11,7,4,1),  
-            (14,25,6,1), (13,24,5,1), (15,26,3,1), (10,23,7,1)  
-        ]  
-    },  
-    {  # 正式地图2  
-        'name': "地图2",  
-        'start': (5, 30),  
-        'target': (40, 15),  
-        'obstacles': [  
-            (24,15,5,1), (27,14,2,1), (23,16,6,1),  
-            (3,31,6,1), (4,32,4,1), (5,30,3,1)  
-        ]  
-    },  
-    {  # 正式地图3  
-        'name': "地图3",  
-        'start': (15, 35),  
-        'target': (30, 10),  
-        'obstacles': [  
-            (44,9,5,1), (43,10,3,1), (45,8,4,1),  
-            (39,32,1,8), (40,29,1,12), (38,33,1,6)  
-        ]  
-    },  
-    {  # 正式地图4  
-        'name': "地图4",  
-        'start': (25, 45),  
-        'target': (10, 5),  
-        'obstacles': [  
-            (17,40,1,6), (16,41,1,4), (18,41,1,3),  
-            (39,0,1,5), (38,3,1,3), (40,0,1,4)  
-        ]  
+        'obstacles': []  # 去掉目标点
     }  
 ]  
 
@@ -81,55 +43,15 @@ class ExperimentData:
         
     def reset(self):  
         self.current_map = 0  
-        self.paths = [[] for _ in range(5)]  # 0:练习 1-4:正式  
-        self.start_times = [0]*5  
-        self.end_times = [0]*5  
-        
+        self.paths = [[] for _ in range(1)]  # 只保留练习地图  
+        self.start_times = [0]*1  
+        self.end_times = [0]*1  
+    
     def add_step(self, pos):  
-        if not self.paths[self.current_map]:  
-            self.start_times[self.current_map] = time.time()  
-        self.paths[self.current_map].append(pos)  
-        
+        pass  # 不需要保存路径数据  
+    
     def undo_step(self):  
-        if self.paths[self.current_map]:  
-            self.paths[self.current_map].pop()  
-            
-    def generate_report(self):  
-        filename = f"experiment_report_{datetime.now().strftime('%Y%m%d%H%M')}.txt"  
-        with open(filename, "w", encoding="utf-8") as f:  
-            f.write("=== 路径规划实验报告 ===\n")  
-            f.write(f"生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")  
-            
-            for i, path in enumerate(self.paths):  
-                if i == 0:  
-                    f.write("【练习地图】\n")  
-                else:  
-                    f.write(f"【正式地图{i}】\n")  
-                
-                f.write(f"地图名称：{MAP_CONFIGS[i]['name']}\n")  
-                f.write(f"总步数：{len(path)-1 if len(path)>0 else 0}步\n")  
-                
-                if self.start_times[i] and self.end_times[i]:  
-                    f.write(f"耗时：{self.end_times[i]-self.start_times[i]:.1f}秒\n")  
-                else:  
-                    f.write("耗时：未完成\n")  
-                
-                if len(path) > 1:  
-                    cut_points = [  
-                        int((len(path)-1)*0.3),  
-                        int((len(path)-1)*0.5),  
-                        int((len(path)-1)*0.7)  
-                    ]  
-                    
-                    f.write("\n路径分段信息：\n")  
-                    f.write(f"30%路径（前{cut_points[0]}步）：{path[:cut_points[0]+1]}\n")  
-                    f.write(f"50%路径（前{cut_points[1]}步）：{path[:cut_points[1]+1]}\n")  
-                    f.write(f"70%路径（前{cut_points[2]}步）：{path[:cut_points[2]+1]}\n")  
-                else:  
-                    f.write("未完成路径规划\n")  
-                
-                f.write("\n" + "="*40 + "\n\n")  
-        return filename  
+        pass  # 不需要撤销路径数据  
 
 # ================= 游戏核心类 =================  
 class PathGame:  
@@ -152,26 +74,23 @@ class PathGame:
     def draw_grid(self):  
         for i in range(GRID_SIZE + 1):  
             pygame.draw.line(self.game_surface, COLORS['grid'],  
-                            (i * CELL_SIZE, 0), (i * CELL_SIZE, GAME_SIZE))  
+                             (i * CELL_SIZE, 0), (i * CELL_SIZE, GAME_SIZE))  
             pygame.draw.line(self.game_surface, COLORS['grid'],  
-                            (0, i * CELL_SIZE), (GAME_SIZE, i * CELL_SIZE))  
+                             (0, i * CELL_SIZE), (GAME_SIZE, i * CELL_SIZE))  
     
     def draw_obstacles(self):  
         for x, y, w, h in self.config['obstacles']:  
             rect_x = x * CELL_SIZE  
             rect_y = (GRID_SIZE - y - h) * CELL_SIZE  
             pygame.draw.rect(self.game_surface, COLORS['obstacle'],  
-                            (rect_x, rect_y, w*CELL_SIZE, h*CELL_SIZE))  
+                             (rect_x, rect_y, w*CELL_SIZE, h*CELL_SIZE))  
     
     def draw_points(self):  
         start_pos = self.convert_coords(*self.config['start'])  
         pygame.draw.circle(self.game_surface, COLORS['start'], start_pos, 8)  
         
-        target_pos = self.convert_coords(*self.config['target'])  
-        pygame.draw.circle(self.game_surface, COLORS['target'], target_pos, 8)  
-        
         current_pos = self.convert_coords(*self.current_pos)  
-        pygame.draw.circle(self.game_surface, COLORS['current'], current_pos, 8)  
+        pygame.draw.circle(self.game_surface, COLORS['current'], current_pos, 8)  # 移除目标点的绘制
     
     def draw_path(self):  
         if len(self.path) > 1:  
@@ -194,7 +113,6 @@ class PathGame:
                     if len(self.path) > 1:  
                         self.path.pop()  
                         self.current_pos = list(self.path[-1])  
-                        self.data.undo_step()  
                     return  
                 
                 dx, dy = 0, 0  
@@ -202,6 +120,9 @@ class PathGame:
                 elif event.key == K_DOWN: dy = -1  
                 elif event.key == K_LEFT: dx = -1  
                 elif event.key == K_RIGHT: dx = 1  
+                elif event.key == K_ESCAPE:  # ESC key pressed, end game
+                    self.finished = True
+                    return  
                 else: return  
                 
                 new_x = self.current_pos[0] + dx  
@@ -211,19 +132,12 @@ class PathGame:
                     return  
                 if not (0 <= new_x <= GRID_SIZE and 0 <= new_y <= GRID_SIZE):  
                     return  
-                if (new_x, new_y) in self.path:  
-                    return  
-                if abs(new_x - self.current_pos[0]) + abs(new_y - self.current_pos[1]) != 1:  
-                    return  
                 
                 self.current_pos = [new_x, new_y]  
                 self.path.append(tuple(self.current_pos))  
-                self.data.add_step(tuple(self.current_pos))  
     
     def check_finish(self):  
-        if tuple(self.current_pos) == self.config['target']:  
-            self.data.end_times[self.data.current_map] = time.time()  
-            return True  
+        # Removed the target check, as there is no target now
         return False  
     
     def update(self, events):  
@@ -301,15 +215,12 @@ class GamePage:
         if self.is_game:  
             if not self.game_instance:  
                 self.game_instance = PathGame(screen, data, MAP_CONFIGS[self.map_index])  
-                data.current_map = self.map_index  
             
             if self.game_instance and not self.game_instance.finished:  
                 self.game_instance.update(events)  
                 screen.blit(self.game_instance.game_surface, (0, 0))  
                 
-                if self.game_instance.check_finish():  
-                    self.game_instance.finished = True  
-                    return True  
+                # Removed the finish check
                 return False  
         return True  
 
@@ -320,7 +231,6 @@ def main():
     pygame.display.set_caption("路径规划实验")  
     clock = pygame.time.Clock()  
     
-    
     data = ExperimentData()  
     
     pages = [  
@@ -328,17 +238,14 @@ def main():
         GamePage("任务说明",   
             "您的任务是规划网格地图地图中，绘制一条从起点到目标点的路径。\n\n"  
             "本次实验一共会有四组网格地图需要完成。在实验过程中，我们将指定一个目标点，\n您需要根据该目标点设计路径，并通过路径的设计来尽可能让对手猜不出您的真实目标。\n\n"  
-            "为了评估您的欺骗策略有效性，我们会将您完成后的路径部分展示给识别者。具体来说，\n我们将分别向识别者提供您路径的30%、50%和70%信息。如果识别者越晚猜出您的目标，您得到的奖金就越高。请注意，您完成的地图将不会马上被识别，识别者的猜测大约会在我们收集完所有材料后开始进行。\n\n"  
-            "基础被试费为10元。如果识别者在三次尝试中都没有猜出您的真实目标，您将获得\n额外的60元奖励。如果识别者在第一次尝试时猜出您的目标，您将获得20元奖励；如果在第二次尝试时\n猜出，您将获得40元奖励。\n\n"  
-            "此外，为了能够更直观地理解您的策略构思，我们会在每张地图的任务前、中期和任务后对您进行访谈，\n每次访谈约为5-10分钟不等。\n具体而言，我们将在每张地图的绘制开始前，先询问您的路径规划思路。随后在您开始绘制时，\n每当您的路径出现较为明显的变动时，管理员会再次询问，\n您可以分享您选择路径时的考虑因素或任何可能的欺骗策略。\n最后，每完成一次路径规划，您将进行任务后访谈。此时，您可以回顾您的规划决策，\n分享是否运用了欺骗策略以及您的思考过程。"),  
+            ),  
         GamePage("练习阶段",   
             "操作说明：\n"  
-            "1. 使用方向键控制移动\n"  
-            "2. 退格键撤销上一步\n"  
-            "3. 点击右侧开始按钮激活游戏",   
+            "1. 点击右侧开始按钮激活游戏\n"  
+            "2. 使用方向键控制移动\n"  
+            "3. 熟悉操作后，可以按Esc键结束游戏\n",
             map_index=0, is_game=True),  
         GamePage("准备开始", "现在你已经了解了该游戏的过程，点击确认键正式开始游戏！"),  
-        *[GamePage(f"游戏{i+1}", f"地图{i+1}路径规划任务\n请规划前往粉色目标点的路径", map_index=i+1, is_game=True) for i in range(4)],  
         GamePage("实验完成", "感谢您已经完成了所有的实验！\n\n实验报告已生成至程序所在目录")  
     ]  
     
@@ -363,7 +270,7 @@ def main():
                     # 处理说明页翻页  
                     if current_page == 1:  
                         current_page += 1  
-                    # 处理常规翻页  
+                    # 处理常规
                     elif current_page < len(pages)-1:  
                         # 游戏页需完成才能翻页  
                         if page.is_game:  
@@ -396,9 +303,8 @@ def main():
                 if current_page < len(pages)-1:  
                     current_page += 1  
                 else:  
-                    # 生成最终报告  
-                    report_file = data.generate_report()  
-                    print(f"实验报告已保存至：{report_file}")  
+                    # 退出游戏或结束实验
+                    running = False
         
         pygame.display.flip()  
         clock.tick(30)  
@@ -407,4 +313,4 @@ def main():
     sys.exit()  
 
 if __name__ == "__main__":  
-    main() 
+    main()  
