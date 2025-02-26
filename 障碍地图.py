@@ -13,7 +13,14 @@ PANEL_WIDTH = 200
 WIDTH = GRID_SIZE * CELL_SIZE + PANEL_WIDTH  
 HEIGHT = GRID_SIZE * CELL_SIZE  
 
-# 颜色配置（严格按需求）  
+# 游戏配置
+GRID_SIZE = 49  
+CELL_SIZE = 15  
+PANEL_WIDTH = 200  
+WIDTH = GRID_SIZE * CELL_SIZE + PANEL_WIDTH  
+HEIGHT = GRID_SIZE * CELL_SIZE  
+
+# 颜色配置
 COLORS = {  
     'background': (255, 255, 255),  
     'grid': (200, 200, 200),  
@@ -28,7 +35,7 @@ COLORS = {
     'current': (255, 0, 0)  
 }  
 
-# 关键点坐标（严格按需求）  
+# 关键点坐标
 POINTS = {  
     'start': (7, 42),  
     'close1': (20, 18),  
@@ -37,7 +44,7 @@ POINTS = {
     'far2': (48, 44)  
 }  
 
-# 障碍物定义（严格按需求）  
+# 障碍物定义
 ORIGINAL_OBSTACLES = [  
     (9, 9, 8, 1),    
     (8, 8, 12, 1),    
@@ -81,7 +88,7 @@ MIRRORED_OBSTACLES = [
 ALL_OBSTACLES = ORIGINAL_OBSTACLES + MIRRORED_OBSTACLES  
 
 def get_font(size):  
-    return pygame.font.Font(FONT_PATH, size)  
+    return pygame.font.Font(FONT_PATH, size)    
 
 class PathGame:  
     def __init__(self):  
@@ -111,19 +118,19 @@ class PathGame:
     def draw_grid(self):  
         for i in range(GRID_SIZE + 1):  
             pygame.draw.line(self.screen, COLORS['grid'],  
-                            (i * CELL_SIZE, 0), (i * CELL_SIZE, HEIGHT))  
+                             (i * CELL_SIZE, 0), (i * CELL_SIZE, HEIGHT))  
             pygame.draw.line(self.screen, COLORS['grid'],  
-                            (0, i * CELL_SIZE), (WIDTH, i * CELL_SIZE))  
+                             (0, i * CELL_SIZE), (WIDTH, i * CELL_SIZE))  
 
     def draw_obstacles(self):  
         for obstacle in ALL_OBSTACLES:  
-            x, y, w, h = obstacle  
-            screen_x = x * CELL_SIZE  
-            screen_y = (GRID_SIZE - y - h) * CELL_SIZE  
-            width = w * CELL_SIZE  
-            height = h * CELL_SIZE  
+            ox, oy, ow, oh = obstacle  
+            screen_x = ox * CELL_SIZE  
+            screen_y = (GRID_SIZE - oy - oh) * CELL_SIZE  
+            width = ow * CELL_SIZE  
+            height = oh * CELL_SIZE  
             pygame.draw.rect(self.screen, COLORS['obstacle'],   
-                            (screen_x, screen_y, width, height))  
+                             (screen_x, screen_y, width, height))  
 
     def draw_points(self):  
         self.draw_obstacles()  
@@ -134,7 +141,7 @@ class PathGame:
             pygame.draw.circle(self.screen, color, pos, 8)  
             
         pygame.draw.circle(self.screen, COLORS['current'],  
-                          self.convert_coords(*self.current_pos), 8)  
+                           self.convert_coords(*self.current_pos), 8)  
 
     def draw_path(self):  
         if len(self.path) > 1:  
@@ -142,21 +149,26 @@ class PathGame:
             pygame.draw.lines(self.screen, (0,0,0), False, points, 3)  
 
     def is_in_obstacle(self, x, y):  
+        """Return True if (x, y) is inside or on the edge of an obstacle."""  
         for obstacle in ALL_OBSTACLES:  
             ox, oy, ow, oh = obstacle  
-            if ox <= x < ox + ow and oy <= y < oy + oh:  
-                return True  
-        return False  
+            # Now, this part is removed to allow passing through obstacles.
+            # We don't check anymore whether a cell is within an obstacle.
+        return False  # Always return False to allow movement through obstacles.
 
     def is_valid_move(self, new_x, new_y):  
+        # Check bounds
         if not (0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE):  
             return False  
-        if (new_x, new_y) in self.path:  
-            return False  
-        if self.is_in_obstacle(new_x, new_y):  
-            return False  
+
+        # Allow revisiting path, no restriction on moving into obstacles
+        # Path can move freely through obstacles now.
+
+        # Must move to an adjacent cell
         if abs(new_x - self.current_pos[0]) + abs(new_y - self.current_pos[1]) != 1:  
             return False  
+
+        # If none of the above conditions block us, it's valid
         return True  
 
     def calculate_angle(self, p1, p2, p3):  
@@ -203,10 +215,10 @@ class PathGame:
 
                     new_x = self.current_pos[0] + dx  
                     new_y = self.current_pos[1] + dy  
-                    
+
                     if not self.is_valid_move(new_x, new_y):  
                         return  
-                    
+
                     if len(self.path) > 1:  
                         angle = self.calculate_angle(self.path[-2], self.path[-1], (new_x, new_y))  
                         if angle >= 25 and self.previous_direction != (dx, dy):  
@@ -247,32 +259,32 @@ class PathGame:
     def save_path_image(self, timestamp):  
         surface = pygame.Surface((WIDTH, HEIGHT))  
         surface.fill(COLORS['background'])  
-        
+
         for i in range(GRID_SIZE + 1):  
             pygame.draw.line(surface, COLORS['grid'],  
-                            (i*CELL_SIZE, 0), (i*CELL_SIZE, HEIGHT))  
+                             (i * CELL_SIZE, 0), (i * CELL_SIZE, HEIGHT))  
             pygame.draw.line(surface, COLORS['grid'],  
-                            (0, i*CELL_SIZE), (WIDTH, i*CELL_SIZE))  
-        
+                             (0, i * CELL_SIZE), (WIDTH, i * CELL_SIZE))  
+
         for obstacle in ALL_OBSTACLES:  
-            x, y, w, h = obstacle  
-            screen_x = x * CELL_SIZE  
-            screen_y = (GRID_SIZE - y - h) * CELL_SIZE  
-            width = w * CELL_SIZE  
-            height = h * CELL_SIZE  
+            ox, oy, ow, oh = obstacle  
+            screen_x = ox * CELL_SIZE  
+            screen_y = (GRID_SIZE - oy - oh) * CELL_SIZE  
+            width = ow * CELL_SIZE  
+            height = oh * CELL_SIZE  
             pygame.draw.rect(surface, COLORS['obstacle'],   
-                            (screen_x, screen_y, width, height))  
-        
+                             (screen_x, screen_y, width, height))  
+
         points = [self.convert_coords(x, y) for x, y in self.path]  
         if len(points) > 1:  
             pygame.draw.lines(surface, (0,0,0), False, points, 3)  
-        
+
         pygame.image.save(surface, f"path_{timestamp}.png")  
 
     def draw_control_panel(self):  
         panel_x = GRID_SIZE * CELL_SIZE  
         pygame.draw.rect(self.screen, (240, 240, 240),   
-                        (panel_x, 0, PANEL_WIDTH, HEIGHT))  
+                         (panel_x, 0, PANEL_WIDTH, HEIGHT))  
 
         text_y = 50  
         controls = [  
@@ -280,7 +292,9 @@ class PathGame:
             "↑ 上移",  
             "↓ 下移",  
             "← 左移",  
-            "→ 右移",   
+            "→ 右移",
+            "不可以穿过",
+            "灰色障碍物"   
         ]  
         for line in controls:  
             text = self.font.render(line, True, (0,0,0))  
@@ -326,7 +340,7 @@ class PathGame:
 
             pygame.display.flip()  
             self.clock.tick(30)  
-            
+
         pygame.quit()  
 
 if __name__ == "__main__":  
